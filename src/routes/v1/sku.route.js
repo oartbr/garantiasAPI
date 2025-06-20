@@ -1,17 +1,17 @@
 const express = require('express');
-// const auth = require('../../middlewares/auth');
+const auth = require('../../middlewares/auth');
 const validate = require('../../middlewares/validate');
 const skuValidation = require('../../validations/sku.validation');
 const skuController = require('../../controllers/sku.controller');
 
 const router = express.Router();
 
-router.get('/getAll', validate(skuValidation.getSkus), skuController.getSkus);
-router.get('/:id', validate(skuValidation.getSku), skuController.getSku);
-router.get('/', validate(skuValidation.getSkus), skuController.getSkus);
-router.post('/create', validate(skuValidation.createSku), skuController.createSku);
-router.patch('/:id', validate(skuValidation.updateSku), skuController.updateSku);
-router.delete('/:skuId', validate(skuValidation.deleteSku), skuController.deleteSku);
+router.get('/getAll', auth('view_skus'), validate(skuValidation.getSkus), skuController.getSkus);
+router.get('/:id', auth('view_skus'), validate(skuValidation.getSku), skuController.getSku);
+router.get('/', auth('view_skus'), validate(skuValidation.getSkus), skuController.getSkus);
+router.post('/create', auth('manage_skus'), validate(skuValidation.createSku), skuController.createSku);
+router.patch('/:id', auth('manage_skus'), validate(skuValidation.updateSku), skuController.updateSku);
+router.delete('/:skuId', auth('delete_skus'), validate(skuValidation.deleteSku), skuController.deleteSku);
 
 /*
 router

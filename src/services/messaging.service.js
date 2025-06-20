@@ -296,7 +296,7 @@ const getAssistant = async (prompt) => {
         method: 'GET',
         headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${apiKey}`,
+            "Authorization": `${apiKey}`,
             "OpenAI-Beta": "assistants=v2"
         }
     });
@@ -317,7 +317,7 @@ const getThread = async () => {
     method: "POST",
     headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `${apiKey}`,
         "OpenAI-Beta": "assistants=v2",
     }
   });
@@ -335,7 +335,7 @@ const addMessagetoThread = async (message, thread_id) => {
     method: "POST",
     headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `${apiKey}`,
         "OpenAI-Beta": "assistants=v2",
     },
     body: JSON.stringify({
@@ -355,7 +355,7 @@ const runAssistant = async (message, thread_id) => {
     method: "POST",
     headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `${apiKey}`,
         "OpenAI-Beta": "assistants=v2",
     },
     body: JSON.stringify({
@@ -378,7 +378,7 @@ const retrieveStatus = async (run_id, thread_id) => {
     method: "GET",
     headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `${apiKey}`,
         "OpenAI-Beta": "assistants=v2",
     },
   });
@@ -397,7 +397,7 @@ const retrieveMessages = async (thread_id) => {
     method: "GET",
     headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `${apiKey}`,
         "OpenAI-Beta": "assistants=v2",
     },
   });
@@ -414,7 +414,7 @@ const getChat = async (prompt) => {
   method: "POST",
   headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
+      Authorization: `${apiKey}`,
   },
   body: JSON.stringify({
       model: "gpt-4o-mini",

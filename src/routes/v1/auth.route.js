@@ -9,13 +9,13 @@ const router = express.Router();
 router.post('/register', validate(authValidation.register), authController.register);
 router.post('/login', validate(authValidation.login), authController.login);
 router.post('/logout', validate(authValidation.logout), authController.logout);
-router.post('/refresh-tokens', validate(authValidation.refreshTokens), authController.refreshTokens);
+router.post('/refresh-tokens', auth('refresh_tokens'), validate(authValidation.refreshTokens), authController.refreshTokens);
 router.post('/forgot-password', validate(authValidation.forgotPassword), authController.forgotPassword);
 router.post('/reset-password', validate(authValidation.resetPassword), authController.resetPassword);
 router.post('/send-verification-email', auth(), authController.sendVerificationEmail);
 router.post('/verify-email', validate(authValidation.verifyEmail), authController.verifyEmail);
-router.get('/me', validate(authValidation.getMe), authController.getMe);
-router.patch('/me', validate(authValidation.patchMe), authController.patchMe);
+router.get('/me', auth('view_profile'), validate(authValidation.getMe), authController.getMe);
+router.patch('/me', auth('manage_profile'), validate(authValidation.patchMe), authController.patchMe);
 
 module.exports = router;
 

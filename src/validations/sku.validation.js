@@ -61,6 +61,7 @@ const updateSku = {
       madeIn: Joi.string(),
       output: Joi.string(),
       updatedAt: Joi.date(),
+      createdAt: Joi.date(),
       id: Joi.string(), // this is just to allow the id to be passed in the body
     })
     .min(1),

@@ -21,8 +21,6 @@ router
   .patch(auth('manageskus'), validate(skuValidation.updatesku), skuController.updatesku)
   .delete(auth('manageskus'), validate(skuValidation.deletesku), skuController.deletesku); */
 
-
-
 /**
  * @swagger
  * tags:

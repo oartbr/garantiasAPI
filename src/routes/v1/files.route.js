@@ -1,11 +1,11 @@
 const express = require('express');
-// const auth = require('../../middlewares/auth');
+const auth = require('../../middlewares/auth');
 const validate = require('../../middlewares/validate');
 const filesValidation = require('../../validations/files.validation');
 const filesController = require('../../controllers/files.controller');
 
 const router = express.Router();
 
-router.post('/upload/:folder', validate(filesValidation.postFile), filesController.postFile);
+router.post('/upload/:folder', auth('upload_file'), validate(filesValidation.postFile), filesController.postFile);
 
 module.exports = router;

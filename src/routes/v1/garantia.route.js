@@ -1,5 +1,5 @@
 const express = require('express');
-// const auth = require('../../middlewares/auth');
+const auth = require('../../middlewares/auth');
 const validate = require('../../middlewares/validate');
 const garantiaValidation = require('../../validations/garantia.validation');
 const garantiaController = require('../../controllers/garantia.controller');
@@ -10,22 +10,77 @@ const router = express.Router();
   res.send('Route works');
 }); */
 
-router.post('/create', validate(garantiaValidation.create), garantiaController.create);
-router.get('/getAll', validate(garantiaValidation.getGarantias), garantiaController.getGarantias);
-router.get('/getAvailable', validate(garantiaValidation.getAvailable), garantiaController.getAvailable);
-router.get('/getPdfs/:status', validate(garantiaValidation.getPdfs), garantiaController.getPdfs);
-router.get('/getPdfFile/:printId', validate(garantiaValidation.getPdfFile), garantiaController.getPdfFile);
-router.post('/assign', validate(garantiaValidation.assign), garantiaController.assign);
-router.post('/register', validate(garantiaValidation.register), garantiaController.register);
-router.patch('/:garantiaId', validate(garantiaValidation.updateGarantia), garantiaController.updateGarantia);
-router.patch('/assign/:garantiaId', validate(garantiaValidation.assign), garantiaController.assign);
-router.patch('/qualityCheck/:garantiaId', validate(garantiaValidation.qualityCheck), garantiaController.qualityCheck);
-router.get('/getListByGarantia/:garantiaId', validate(garantiaValidation.getList), garantiaController.getList);
-router.get('/getList/:userId', validate(garantiaValidation.getListByUser), garantiaController.getListByUser);
-router.get('/getUser/:garantiaId', validate(garantiaValidation.getUser), garantiaController.getUser);
-router.get('/:garantiaId/:userId', validate(garantiaValidation.getGarantia), garantiaController.getGarantia);
-router.get('/:garantiaId', validate(garantiaValidation.getGarantia), garantiaController.getGarantiaInfo);
-router.delete('/:garantiaId', validate(garantiaValidation.deleteGarantia), garantiaController.deleteGarantia);
+router.post('/create', auth('manage_garantias'), validate(garantiaValidation.create), garantiaController.create);
+router.get('/getAll', auth('view_garantias'), validate(garantiaValidation.getGarantias), garantiaController.getGarantias);
+router.get(
+  '/getAvailable',
+  auth('view_garantias'),
+  validate(garantiaValidation.getAvailable),
+  garantiaController.getAvailable
+);
+router.get('/getPdfs/:status', auth('view_prints'), validate(garantiaValidation.getPdfs), garantiaController.getPdfs);
+router.get(
+  '/getPdfFile/:printId',
+  auth('view_prints'),
+  validate(garantiaValidation.getPdfFile),
+  garantiaController.getPdfFile
+);
+router.post('/assign', auth('assign_garantias'), validate(garantiaValidation.assign), garantiaController.assign);
+router.post('/register', auth('register_garantias'), validate(garantiaValidation.register), garantiaController.register);
+router.patch(
+  '/:garantiaId',
+  auth('manage_garantias'),
+  validate(garantiaValidation.updateGarantia),
+  garantiaController.updateGarantia
+);
+router.patch(
+  '/assign/:garantiaId',
+  auth('assign_garantias'),
+  validate(garantiaValidation.assign),
+  garantiaController.assign
+);
+router.patch(
+  '/qualityCheck/:garantiaId',
+  auth('control_garantias'),
+  validate(garantiaValidation.qualityCheck),
+  garantiaController.qualityCheck
+);
+router.get(
+  '/getListByGarantia/:garantiaId',
+  auth('view_garantias'),
+  validate(garantiaValidation.getList),
+  garantiaController.getList
+);
+router.get(
+  '/getList/:userId',
+  auth('view_garantias'),
+  validate(garantiaValidation.getListByUser),
+  garantiaController.getListByUser
+);
+router.get(
+  '/getUser/:garantiaId',
+  auth('identify_garantias'),
+  validate(garantiaValidation.getUser),
+  garantiaController.getUser
+);
+router.get(
+  '/:garantiaId/:userId',
+  auth('view_garantias'),
+  validate(garantiaValidation.getGarantia),
+  garantiaController.getGarantia
+);
+router.get(
+  '/:garantiaId',
+  auth('view_garantias'),
+  validate(garantiaValidation.getGarantia),
+  garantiaController.getGarantiaInfo
+);
+router.delete(
+  '/:garantiaId',
+  auth('delete_garantias'),
+  validate(garantiaValidation.deleteGarantia),
+  garantiaController.deleteGarantia
+);
 
 module.exports = router;
 

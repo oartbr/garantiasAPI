@@ -18,7 +18,7 @@ const tokenSchema = mongoose.Schema(
     },
     type: {
       type: String,
-      enum: [tokenTypes.REFRESH, tokenTypes.RESET_PASSWORD, tokenTypes.VERIFY_EMAIL],
+      enum: [tokenTypes.REFRESH, tokenTypes.RESET_PASSWORD, tokenTypes.VERIFY_EMAIL, tokenTypes.ACCESS],
       required: true,
     },
     expires: {
@@ -28,6 +28,14 @@ const tokenSchema = mongoose.Schema(
     blacklisted: {
       type: Boolean,
       default: false,
+    },
+    tenantId: {
+      type: String,
+      default: 'wse',
+    },
+    role: {
+      type: String,
+      default: 'GUEST',
     },
   },
   {

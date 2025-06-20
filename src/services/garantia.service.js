@@ -139,9 +139,8 @@ const getGarantiasByUserId = async (userId) => {
  * @returns {Promise<User>}
  */
 const getUserByGarantiaId = async (garantiaId) => {
+  // console.log({ garantiaId });
   const { phoneNumber, confirmed } = await CheckPhoneNumber.getCheckById(garantiaId);
-
-  // console.log({ phoneNumber, confirmed });
 
   if (confirmed === true && phoneNumber !== null) {
     const user = await User.getUserByPhoneNumber(phoneNumber);
@@ -221,7 +220,7 @@ const patchGarantiaById = async (garantiaId, updateBody) => {
  * @returns {Promise<garantia>}
  */
 const deleteGarantiaById = async (garantiaId) => {
-  const garantia = await getGarantiaById(garantiaId);
+  const garantia = await Garantia.getGarantiaById(garantiaId);
   if (!garantia) {
     throw new ApiError(httpStatus.NOT_FOUND, 'garantia not found');
   }
