@@ -15,6 +15,8 @@ A rede externa fica bloqueada; os serviços externos são simulados. O primeiro 
 Importe este repositório como projeto separado do frontend, com Node 24.x e `vercel.json`.
 A entrada `api/index.js` encaminha para `src/serverless.js`, que aguarda e reutiliza a conexão Atlas.
 Use Install Command `npm ci` e Build Command `npm run build`; a Function tem duração máxima configurada de 60 segundos.
+O diretório de saída estática é `public`, declarado em `vercel.json` e versionado com `robots.txt`.
+Ele atende à etapa de build estático da Vercel; a API continua sendo executada pela Function em `api/index.js`.
 Configure `NODE_ENV=production`,
 `MONGODB_URL`, `JWT_SECRET`, `CORS_ORIGIN` e as variáveis SMTP, Twilio, Blob e tema de
 `src/config/config.js` nas configurações do projeto. O Atlas deve permitir a conectividade da Vercel.
