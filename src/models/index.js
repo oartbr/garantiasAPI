@@ -1,3 +1,5 @@
+// Preserve Mongoose 5 filter behavior while validating filters at the HTTP boundary.
+require('mongoose').set('strictQuery', false);
 module.exports.Token = require('./token.model');
 module.exports.User = require('./user.model');
 module.exports.Garantia = require('./garantia.model');

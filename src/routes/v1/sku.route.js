@@ -1,17 +1,18 @@
 const express = require('express');
-// const auth = require('../../middlewares/auth');
+const { session } = require('../../middlewares/session');
 const validate = require('../../middlewares/validate');
 const skuValidation = require('../../validations/sku.validation');
 const skuController = require('../../controllers/sku.controller');
 
 const router = express.Router();
+router.use(session());
 
 router.get('/getAll', validate(skuValidation.getSkus), skuController.getSkus);
 router.get('/:id', validate(skuValidation.getSku), skuController.getSku);
 router.get('/', validate(skuValidation.getSkus), skuController.getSkus);
-router.post('/create', validate(skuValidation.createSku), skuController.createSku);
-router.patch('/:id', validate(skuValidation.updateSku), skuController.updateSku);
-router.delete('/:skuId', validate(skuValidation.deleteSku), skuController.deleteSku);
+router.post('/create', session('ADMIN'), validate(skuValidation.createSku), skuController.createSku);
+router.patch('/:id', session('ADMIN'), validate(skuValidation.updateSku), skuController.updateSku);
+router.delete('/:skuId', session('ADMIN'), validate(skuValidation.deleteSku), skuController.deleteSku);
 
 /*
 router

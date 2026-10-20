@@ -1,7 +1,6 @@
 const express = require('express');
 const helmet = require('helmet');
-const xss = require('xss-clean');
-const mongoSanitize = require('express-mongo-sanitize');
+const sanitize = require('./middlewares/sanitize');
 const compression = require('compression');
 const passport = require('passport');
 const httpStatus = require('http-status');
@@ -17,6 +16,8 @@ const ApiError = require('./utils/ApiError');
 const logger = require('./config/logger');
 
 const app = express();
+app.set('query parser', 'extended');
+app.set('trust proxy', process.env.VERCEL ? 1 : false);
 
 const corsOptions = {
   origin: config.cors.origin, // Replace with your local development URL
@@ -42,15 +43,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // sanitize request data
-app.use(xss());
-app.use(mongoSanitize());
+app.use(sanitize);
 
 // gzip compression
 app.use(compression());
 
-// enable cors
-app.use(cors());
-app.options('*', cors());
+// The configured CORS middleware above also handles preflight requests.
 
 // jwt authentication
 app.use(passport.initialize());
@@ -59,6 +57,7 @@ passport.use('jwt', jwtStrategy);
 // limit repeated failed requests to auth endpoints
 if (config.env === 'production') {
   app.use('/v1/auth', authLimiter);
+  app.use(['/v1/messaging/sendCode', '/v1/messaging/codeLogin', '/v1/messaging/confirmCode'], authLimiter);
 }
 
 // v1 api routes

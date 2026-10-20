@@ -1,0 +1,20 @@
+name: API regression
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      MONGOMS_DOWNLOAD_DIR: ${{ github.workspace }}/node_modules/.cache/mongodb-binaries
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Download isolated MongoDB before network-blocked tests
+        run: node -e "require('mongodb-memory-server').MongoMemoryServer.create({binary:{version:'8.0.16'}}).then(s=>s.stop())"
+      - run: npm test
+      - run: npm run lint
+      - run: npm run build

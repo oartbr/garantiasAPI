@@ -1,31 +1,31 @@
 const express = require('express');
-// const auth = require('../../middlewares/auth');
+const { session } = require('../../middlewares/session');
 const validate = require('../../middlewares/validate');
 const garantiaValidation = require('../../validations/garantia.validation');
 const garantiaController = require('../../controllers/garantia.controller');
 
 const router = express.Router();
 
-/* router.post('/create', (req, res) => {
+/* router.post('/create', session('ADMIN'), (req, res) => {
   res.send('Route works');
 }); */
 
-router.post('/create', validate(garantiaValidation.create), garantiaController.create);
-router.get('/getAll', validate(garantiaValidation.getGarantias), garantiaController.getGarantias);
-router.get('/getAvailable', validate(garantiaValidation.getAvailable), garantiaController.getAvailable);
-router.get('/getPdfs/:status', validate(garantiaValidation.getPdfs), garantiaController.getPdfs);
-router.get('/getPdfFile/:printId', validate(garantiaValidation.getPdfFile), garantiaController.getPdfFile);
-router.post('/assign', validate(garantiaValidation.assign), garantiaController.assign);
-router.post('/register', validate(garantiaValidation.register), garantiaController.register);
-router.patch('/:garantiaId', validate(garantiaValidation.updateGarantia), garantiaController.updateGarantia);
-router.patch('/assign/:garantiaId', validate(garantiaValidation.assign), garantiaController.assign);
-router.patch('/qualityCheck/:garantiaId', validate(garantiaValidation.qualityCheck), garantiaController.qualityCheck);
-router.get('/getListByGarantia/:garantiaId', validate(garantiaValidation.getList), garantiaController.getList);
-router.get('/getList/:userId', validate(garantiaValidation.getListByUser), garantiaController.getListByUser);
-router.get('/getUser/:garantiaId', validate(garantiaValidation.getUser), garantiaController.getUser);
-router.get('/:garantiaId/:userId', validate(garantiaValidation.getGarantia), garantiaController.getGarantia);
+router.post('/create', session('ADMIN'), validate(garantiaValidation.create), garantiaController.create);
+router.get('/getAll', session('ADMIN'), validate(garantiaValidation.getGarantias), garantiaController.getGarantias);
+router.get('/getAvailable', session('ADMIN', 'QA', 'CARRIER', 'SALES', 'MAINTENANCE'), validate(garantiaValidation.getAvailable), garantiaController.getAvailable);
+router.get('/getPdfs/:status', session('ADMIN'), validate(garantiaValidation.getPdfs), garantiaController.getPdfs);
+router.get('/getPdfFile/:printId', session('ADMIN'), validate(garantiaValidation.getPdfFile), garantiaController.getPdfFile);
+router.post('/assign', session('ADMIN', 'QA'), validate(garantiaValidation.assign), garantiaController.assign);
+router.post('/register', session(), validate(garantiaValidation.register), garantiaController.register);
+router.patch('/:garantiaId', session('ADMIN'), validate(garantiaValidation.updateGarantia), garantiaController.updateGarantia);
+router.patch('/assign/:garantiaId', session('ADMIN', 'QA'), validate(garantiaValidation.assign), garantiaController.assign);
+router.patch('/qualityCheck/:garantiaId', session('ADMIN', 'QA'), validate(garantiaValidation.qualityCheck), garantiaController.qualityCheck);
+router.get('/getListByGarantia/:garantiaId', session(), validate(garantiaValidation.getList), garantiaController.getList);
+router.get('/getList/:userId', session(), validate(garantiaValidation.getListByUser), garantiaController.getListByUser);
+router.get('/getUser/:garantiaId', session(), validate(garantiaValidation.getUser), garantiaController.getUser);
+router.get('/:garantiaId/:userId', session(), validate(garantiaValidation.getGarantia), garantiaController.getGarantia);
 router.get('/:garantiaId', validate(garantiaValidation.getGarantia), garantiaController.getGarantiaInfo);
-router.delete('/:garantiaId', validate(garantiaValidation.deleteGarantia), garantiaController.deleteGarantia);
+router.delete('/:garantiaId', session('ADMIN'), validate(garantiaValidation.deleteGarantia), garantiaController.deleteGarantia);
 
 module.exports = router;
 

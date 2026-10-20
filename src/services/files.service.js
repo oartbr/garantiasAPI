@@ -1,72 +1,30 @@
 const { put } = require('@vercel/blob');
-const { NextResponse } = require('next/server');
 const formidable = require('formidable');
 const fs = require('fs').promises;
-const httpStatus = require('http-status');
 const ApiError = require('../utils/ApiError');
 
-/**
- * Post file
- * @returns {Promise<Files>}
- */
 const postFile = async (request, res, folder) => {
+  const form = new formidable.IncomingForm();
+  const temporaryFiles = [];
+  form.on('fileBegin', (name, file) => temporaryFiles.push(file));
   try {
-    const form = new formidable.IncomingForm();
-
-    return new Promise((resolve, reject) => {
-      form.parse(request, async (err, fields, files) => {
-        if (err) {
-          reject(NextResponse.json({ error: 'Error parsing form data' }, { status: 500 }));
-          // console.log('first error');
-          return;
-        }
-
-        const { file } = files;
-
-        if (!file[0]) {
-          reject(NextResponse.json({ error: 'No file uploaded' }, { status: 400 }));
-          // console.log('no file error');
-          return;
-        }
-
-        try {
-          const fileContent = await fs.readFile(file[0].filepath);
-          const blob = put(`${folder}/${file[0].newFilename}`, fileContent, {
-            access: 'public',
-            contentType: file[0].mimetype,
-          });
-          resolve(blob);
-        } catch (uploadError) {
-          reject(NextResponse.json({ error: uploadError }, { status: 500 }));
-          // console.log('upload error', uploadError);
-        }
-      });
-    });
-  } catch (urlError) {
-    // console.log('fourth error');
-    res.status(500).json({ error: urlError });
-    return NextResponse.json({ error: urlError }, { status: 400 });
+    let files;
+    try {
+      [, files] = await form.parse(request);
+    } catch (error) {
+      throw new ApiError(error.httpCode || 400, 'Error parsing form data');
+    }
+    const file = files.file?.[0];
+    if (!file) throw new ApiError(400, 'No file uploaded');
+    const content = await fs.readFile(file.filepath);
+    return await put(folder + '/' + file.newFilename, content, { access: 'public', contentType: file.mimetype });
+  } finally {
+    await Promise.all(temporaryFiles.map(file => fs.unlink(file.filepath).catch(error => {
+      if (error.code !== 'ENOENT') throw error;
+    })));
   }
 };
-
-/**
- * Post file
- * @returns {Promise<Files>}
- */
-const postQRcode = async (file, filename, folder) => {
-  const blob = put(`${folder}/${filename}.svg`, file, {
-    access: 'public',
-    contentType: file.mimetype,
-  });
-
-  if (!blob) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, { error: 'Error uploading file' });
-  }
-
-  return blob;
-};
-
-module.exports = {
-  postFile,
-  postQRcode,
-};
+const postQRcode = (file, filename, folder) => put(folder + '/' + filename + '.svg', file, {
+  access: 'public', contentType: 'image/svg+xml',
+});
+module.exports = { postFile, postQRcode };

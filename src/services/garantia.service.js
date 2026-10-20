@@ -91,17 +91,18 @@ const getGarantiaById = async (garantiaId, userId) => {
     if (sku) {
       garantia.brand = sku.brand;
       garantia.description = sku.description;
-      garantia.save(); // save the garantia with the brand and description if it doesn't have them
+      await garantia.save(); // Finish persistence before a serverless request ends.
     }
   }
 
   if (
     user &&
-    ((garantia.status !== 'registered' && user._id === userId) ||
+    ((String(garantia.userId) === String(user._id)) ||
       (userId && user.role.name === 'ADMIN') ||
       (userId && user.role.name === 'SALES') ||
       (userId && user.role.name === 'QA') ||
-      (userId && user.role.name === 'CARRIER'))
+      (userId && user.role.name === 'CARRIER') ||
+      (userId && user.role.name === 'MAINTENANCE'))
   ) {
     return garantia;
   }
@@ -221,11 +222,11 @@ const patchGarantiaById = async (garantiaId, updateBody) => {
  * @returns {Promise<garantia>}
  */
 const deleteGarantiaById = async (garantiaId) => {
-  const garantia = await getGarantiaById(garantiaId);
+  const garantia = await Garantia.findOne({ garantiaId });
   if (!garantia) {
     throw new ApiError(httpStatus.NOT_FOUND, 'garantia not found');
   }
-  await garantia.remove();
+  await garantia.deleteOne();
   return garantia;
 };
 
@@ -236,41 +237,19 @@ const deleteGarantiaById = async (garantiaId) => {
  */
 const register = async (userData) => {
   const garantia = await Garantia.getGarantiaById(userData.garantiaId);
-
-  if (!garantia) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Garantia not found');
+  const user = await User.findById(userData.userId);
+  if (!user) throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  const update = { status: 'registered', userId: user._id, registeredAt: Date.now() };
+  for (const key of ['policy','email','address','city','firstName','lastName','number','phoneNumber','zipcode']) {
+    if (userData[key] !== undefined) update[key] = userData[key];
   }
-
-  // const checkPhoneNumber = await CheckPhoneNumber.getCheckById(userData.garantiaId);
-  // userData.phoneNumber = checkPhoneNumber.phoneNumber;
-  // userData.checkPhoneNumber = checkPhoneNumber._id;
-
-  const user = await User.findOne({ _id: userData.userId });
-
-  /* if (!user) {
-    const user = await User.create(userData);
-  } */
-
-  if (user) {
-    garantia.status = 'registered';
-    garantia.userId = user._id;
-    garantia.registeredAt = Date.now();
-
-    // Add the new fields from userData to garantia
-    garantia.policy = userData.policy;
-    garantia.email = userData.email;
-    garantia.address = userData.address;
-    garantia.city = userData.city;
-    garantia.firstName = userData.firstName;
-    garantia.lastName = userData.lastName;
-    garantia.number = userData.number;
-    garantia.phoneNumber = userData.phoneNumber;
-    garantia.zipcode = userData.zipcode;
-
-    await garantia.save();
-  }
-
-  return garantia.populate('usertId').execPopulate();
+  const registered = await Garantia.findOneAndUpdate({
+    _id: garantia._id,
+    status: { $in: ['qualityChecked', 'shipped', 'delivered', 'sold', 'registered'] },
+    $or: [{ userId: { $exists: false } }, { userId: null }, { userId: user._id }],
+  }, { $set: update }, { new: true, runValidators: true }).populate('userId');
+  if (!registered) throw new ApiError(httpStatus.CONFLICT, 'Warranty unavailable for registration');
+  return registered;
 };
 
 module.exports = {

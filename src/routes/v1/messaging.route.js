@@ -1,3 +1,4 @@
+const verifyTwilio = require('../../middlewares/twilio-signature');
 const express = require('express');
 // const auth = require('../../middlewares/auth');
 const validate = require('../../middlewares/validate');
@@ -9,6 +10,6 @@ const router = express.Router();
 router.post('/sendCode', validate(messagingValidation.sendCodeWhatsApp), messagingController.sendCodeWhatsApp);
 router.post('/codeLogin', validate(messagingValidation.sendCodeWhatsApp), messagingController.sendWhats);
 router.post('/confirmCode', validate(messagingValidation.confirmCode), messagingController.confirmCode);
-router.post('/whatsIncoming', validate(messagingValidation.whatsIncoming), messagingController.whatsIncoming);
+router.post('/whatsIncoming', verifyTwilio, validate(messagingValidation.whatsIncoming), messagingController.whatsIncoming);
 
 module.exports = router;

@@ -1,3 +1,4 @@
+const { randomInt } = require('node:crypto');
 class CodeGenerator {
   code = "";
   chars = "";
@@ -20,7 +21,7 @@ class CodeGenerator {
     this.code = "";
 
     for (let i = 0; i < this.length; i++) {
-      const randomIndex = Math.floor(Math.random() * this.chars.length);
+      const randomIndex = randomInt(this.chars.length);
       this.code += this.chars.charAt(randomIndex);
     }
 
@@ -28,9 +29,12 @@ class CodeGenerator {
   }
 
   create(quantity){
+    if (!Number.isInteger(quantity) || quantity < 0 || this.collection.length + quantity > this.chars.length ** this.length) {
+      throw new RangeError('Invalid code quantity');
+    }
     for (let i = 0; i < quantity; i++) {
       this.new();
-      if (this.collection[this.code]) {
+      if (this.collection.includes(this.code)) {
         i--;
       } else {
         this.addToCollection();

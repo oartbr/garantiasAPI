@@ -1,9 +1,9 @@
 const dotenv = require('dotenv');
 const path = require('path');
 const Joi = require('joi');
-const logger = require('./logger');
 
-dotenv.config({ path: path.join(__dirname, '../../.env') });
+// Tests must never inherit credentials or a database URL from a developer's .env.
+if (process.env.NODE_ENV !== 'test') dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const envVarsSchema = Joi.object()
   .keys({
@@ -33,17 +33,14 @@ if (error) {
   throw new Error(`Config validation error: ${error.message}`);
 }
 
-logger.info(`NODE_ENV: ${envVars.NODE_ENV}`);
 
 module.exports = {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
   mongoose: {
-    url: envVars.MONGODB_URL + (envVars.NODE_ENV === 'test' ? '-test' : ''),
+    url: envVars.MONGODB_URL,
     options: {
-      useCreateIndex: true,
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+      autoIndex: envVars.NODE_ENV !== 'production',
     },
   },
   jwt: {

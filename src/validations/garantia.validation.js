@@ -3,10 +3,10 @@ const { objectId } = require('./custom.validation');
 
 const create = {
   body: Joi.object().keys({
-    quantity: Joi.number().required(),
-    length: Joi.number().required(),
-    prefix: Joi.string().required(),
-    type: Joi.string(),
+    quantity: Joi.number().integer().min(1).max(100).required(),
+    length: Joi.number().integer().min(5).max(32).required(),
+    prefix: Joi.string().max(32).required(),
+    type: Joi.string().valid('string', 'number'),
   }),
 };
 

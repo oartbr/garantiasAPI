@@ -146,12 +146,11 @@ clientSchema.methods.isPasswordMatch = async function (password) {
   return bcrypt.compare(password, client.password);
 };
 
-clientSchema.pre('save', async function (next) {
+clientSchema.pre('save', async function () {
   const client = this;
   if (client.isModified('password')) {
     client.password = await bcrypt.hash(client.password, 8);
   }
-  next();
 });
 
 /**

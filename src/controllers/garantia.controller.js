@@ -9,6 +9,7 @@ const { qrcodeService } = require('../services');
 const { filesService } = require('../services');
 const { printService } = require('../services');
 const { tokenService } = require('../services');
+const { requireOwner, roleName } = require('../middlewares/session');
 
 const create = catchAsync(async (req, res) => {
   const aGarantias = new CodeGenerator(req.body.length, req.body.type, req.body.prefix);
@@ -68,22 +69,22 @@ const getPdfFile = catchAsync(async (req, res) => {
 });
 
 const getAvailable = catchAsync(async (req, res) => {
-  const filter = pick(req.query, ['brand']);
-  const options = pick(req.query, ['sortBy', 'limit', 'page']);
+  const filter = pick((req.validated?.query ?? req.sanitizedQuery ?? req.query), ['brand']);
+  const options = pick((req.validated?.query ?? req.sanitizedQuery ?? req.query), ['sortBy', 'limit', 'page']);
   const result = await garantiaService.queryGarantias(filter, options);
   res.send(result);
 });
 
 const getGarantias = catchAsync(async (req, res) => {
-  const options = pick(req.query, ['sort', 'limit', 'page']);
-  const filter = pick(req.query, ['filters']);
+  const options = pick((req.validated?.query ?? req.sanitizedQuery ?? req.query), ['sort', 'limit', 'page']);
+  const filter = pick((req.validated?.query ?? req.sanitizedQuery ?? req.query), ['filters']);
   const result = await garantiaService.queryGarantias(filter, options);
   // console.log({page: result.page, totalPages: result.totalPages, totalResults: result.totalResults, hasNextPage: result.hasNextPage});
   res.send(result);
 });
 
 const getGarantia = catchAsync(async (req, res) => {
-  const userId = typeof req.params.userId !== 'undefined' ? req.params.userId : false;
+  const userId = req.user.id;
   if (req.headers.authorization && userId) {
     // const getVerifiedToken = await tokenService.verifyToken(req.headers.authorization, 'refresh');
     // console.log({ getVerifiedToken });
@@ -106,8 +107,7 @@ const getGarantiaInfo = catchAsync(async (req, res) => {
 });
 
 const assign = catchAsync(async (req, res) => {
-  const getVerifiedToken = await tokenService.verifyToken(req.headers.authorization, 'refresh');
-  const garantia = await garantiaService.getGarantiaById(req.params.garantiaId, getVerifiedToken.user);
+  const garantia = await garantiaService.getGarantiaById(req.params.garantiaId || req.body.garantiaId, req.user.id);
 
   if (!garantia) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Garantia not found');
@@ -127,8 +127,7 @@ const assign = catchAsync(async (req, res) => {
 });
 
 const qualityCheck = catchAsync(async (req, res) => {
-  const getVerifiedToken = await tokenService.verifyToken(req.headers.authorization, 'refresh');
-  const garantia = await garantiaService.getGarantiaById(req.params.garantiaId, getVerifiedToken.user);
+  const garantia = await garantiaService.getGarantiaById(req.params.garantiaId, req.user.id);
   if (!garantia) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Garantia not found');
   } else if (
@@ -150,6 +149,7 @@ const getUser = catchAsync(async (req, res) => {
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
+  requireOwner(req.user, user.id);
   res.send(user);
 });
 
@@ -160,12 +160,14 @@ const getList = catchAsync(async (req, res) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
 
+  requireOwner(req.user, user.id);
   const garantias = await garantiaService.getGarantiasByUserId(user._id);
 
   res.send(garantias);
 });
 
 const getListByUser = catchAsync(async (req, res) => {
+  requireOwner(req.user, req.params.userId);
   const garantias = await garantiaService.getGarantiasByUserId(req.params.userId);
 
   if (!garantias) {
@@ -176,6 +178,9 @@ const getListByUser = catchAsync(async (req, res) => {
 });
 
 const register = catchAsync(async (req, res) => {
+  if (roleName(req.user) !== 'ADMIN' && String(req.body.userId) !== req.user.id) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'Forbidden');
+  }
   const garantia = await garantiaService.register(req.body);
 
   res.status(httpStatus.OK).send(garantia);

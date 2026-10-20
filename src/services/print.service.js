@@ -31,7 +31,7 @@ const getPdfsByStatus = async (status) => {
  * Post file
  * @returns {Promise<Files>}
  */
-const createPdf = async (print, res) => {
+const createPdf = async (print) => {
   try {
     // Convert 10cm to points
     const pageSize = { width: 187.875 * 2, height: 136.175 * 2 }; // ~10cm in points
@@ -43,8 +43,13 @@ const createPdf = async (print, res) => {
     const buffers = [];
 
     doc.on('data', buffers.push.bind(buffers));
-    doc.on('end', async () => {
-      const pdfBuffer = Buffer.concat(buffers);
+    const completed = new Promise((resolve, reject) => {
+      doc.on('error', reject);
+      doc.on('end', () => resolve(Buffer.concat(buffers)));
+    });
+    /* Upload is awaited below, after the stream finishes. */
+    const upload = async () => {
+      const pdfBuffer = await completed;
       const filename = `pdf/${print.printId}.pdf`;
 
       // Store PDF in Vercel Blob
@@ -54,12 +59,12 @@ const createPdf = async (print, res) => {
 
       const updatedPrint = await Print.findById(print._id);
 
-      await updatedPrint.update({
+      await updatedPrint.updateOne({
         url, // Save the URL in the database for future reference
       });
       // console.log(`after end time: ${Date.now() - start} ms`);
       return url; // Return the URL for the caller (e.g., API response)
-    });
+    };
 
     // Fetch SVG data as strings (SVGtoPDF needs text, not buffers)
     const svgDataArray = await Promise.all(
@@ -83,12 +88,13 @@ const createPdf = async (print, res) => {
       }
     });
     doc.end();
+    return await upload();
   } catch (error) {
     // console.error('Error generating PDF:', error);
     if (error instanceof ApiError) {
-      res.status(error.statusCode).json({ error: error.message });
+      throw error;
     } else {
-      res.status(httpStatus.INTERNAL_SERVER_ERROR).json({ error: 'Failed to generate PDF' });
+      throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to generate PDF');
     }
   }
 };
@@ -107,18 +113,17 @@ const getPdfById = async (printId, res) => {
 
   if (!print.url && print.status === 'pending') {
     await createPdf(print, res);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
     updatedPrint = await Print.findOne({ printId });
-    await updatedPrint.update({
+    await updatedPrint.updateOne({
       status: 'created', // Update status
     });
   } else if (!print.url && print.status === 'created') {
-    await print.update({
+    await print.updateOne({
       status: 'processing', // Update status
     });
     return print; // Print found and set to processing
   } else if (print.url && (print.status === 'created' || print.status === 'processing' || print.status === 'pending')) {
-    await print.update({
+    await print.updateOne({
       status: 'completed', // Update status
     });
     return print; // Print found amd set to complated

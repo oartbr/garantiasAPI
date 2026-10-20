@@ -1,3 +1,4 @@
+const verifyTwilio = require('../../middlewares/twilio-signature');
 const express = require('express');
 // const auth = require('../../middlewares/auth');
 const validate = require('../../middlewares/validate');
@@ -6,7 +7,7 @@ const callController = require('../../controllers/call.controller');
 
 const router = express.Router();
 
-router.get('/incoming', validate(callValidation.incomingCall), callController.incomingCall);
+router.get('/incoming', verifyTwilio, validate(callValidation.incomingCall), callController.incomingCall);
 
 /*
 router
