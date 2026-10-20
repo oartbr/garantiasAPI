@@ -12,6 +12,8 @@
     "npm": ">=11 <12"
   },
   "scripts": {
+    "predev": "node scripts/check-runtime.cjs",
+    "prestart": "node scripts/check-runtime.cjs",
     "build": "node --check api/index.js && node --check src/serverless.js",
     "start": "node src/index.js",
     "dev": "cross-env NODE_ENV=development nodemon src/index.js",

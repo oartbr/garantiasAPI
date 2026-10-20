@@ -4,6 +4,9 @@ Express 5 / Mongoose 9, Node.js 24 LTS. Hospedagem: Vercel. Banco: MongoDB Atlas
 
 ## Desenvolvimento e testes
 Use `.nvmrc`, execute `npm ci` e configure o ambiente conforme `.env.example`.
+No Windows com NVM, execute `nvm install 24.22.0` e `nvm use 24.22.0`.
+Confirme que `node --version` retorna `v24.22.0` antes de iniciar: `.nvmrc` não troca
+a versão automaticamente. `npm run dev` e `npm start` verificam o runtime antes de carregar a API.
 `npm run dev` inicia o servidor local. `npm test` usa MongoDB 8 temporário, sem carregar `.env`.
 A rede externa fica bloqueada; os serviços externos são simulados. O primeiro uso baixa o MongoDB.
 `npm run coverage` gera cobertura. A CI antecipa o download e roda testes em Node 24.
