@@ -1,4 +1,4 @@
-const faker = require('faker');
+const { faker } = require('@faker-js/faker');
 const { User } = require('../../../src/models');
 
 describe('User model', () => {
@@ -6,10 +6,11 @@ describe('User model', () => {
     let newUser;
     beforeEach(() => {
       newUser = {
-        name: faker.name.findName(),
+        firstName: faker.person.firstName(),
+        lastName: faker.person.lastName(),
         email: faker.internet.email().toLowerCase(),
         password: 'password1',
-        role: 'user',
+        role: { id: 2, name: 'USER' },
       };
     });
 
@@ -38,7 +39,7 @@ describe('User model', () => {
     });
 
     test('should throw a validation error if role is unknown', async () => {
-      newUser.role = 'invalid';
+      newUser.role = { id: 99, name: 'INVALID' };
       await expect(new User(newUser).validate()).rejects.toThrow();
     });
   });
@@ -46,10 +47,11 @@ describe('User model', () => {
   describe('User toJSON()', () => {
     test('should not return user password when toJSON is called', () => {
       const newUser = {
-        name: faker.name.findName(),
+        firstName: faker.person.firstName(),
+        lastName: faker.person.lastName(),
         email: faker.internet.email().toLowerCase(),
         password: 'password1',
-        role: 'user',
+        role: { id: 2, name: 'USER' },
       };
       expect(new User(newUser).toJSON()).not.toHaveProperty('password');
     });

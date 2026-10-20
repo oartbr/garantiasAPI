@@ -7,8 +7,6 @@ const config = require('../config/config');
 const { CheckPhoneNumber } = require('../models');
 const { User } = require('../models');
 const { Whats } = require('../models');
-const { agent } = require('supertest');
-const { func } = require('joi');
 
 const messagingClient = new Twilio(config.twilio.accountSid, config.twilio.authToken);
 
@@ -24,7 +22,7 @@ const functionMap = { // this is for using with openAI function calling
   "get_product_properties": async (capacity) => { // expect a number, which is the capacity of the product in liters
     // do something!!!
     return {
-      capacidad: product_capacity,
+      capacidad: capacity,
       tipo: "product",
       sku: "brand",
       plazo_de_entrega: "model",
@@ -53,7 +51,6 @@ const confirmWhatsCode = async (code, garantiaId) => {
   } else {
     await CheckPhoneNumber.findOneAndUpdate({ code, garantiaId }, { $set: { confirmed: true } }, { upsert: true });
   }
-
   return true;
 };
 
@@ -178,7 +175,6 @@ const replyMessage = async (phoneNumber, message) => {
   } catch (error) {
     throw new ApiError(httpStatus.BAD_REQUEST, `Failed to send Message: ${error.message}`);
   }
-  return true;
 };
 
 const whatsIncoming = async (req, res) => {
@@ -281,7 +277,7 @@ const whatsIncoming = async (req, res) => {
   /*const whats = await Whats.create( req.body );
   // console.log({key: config.openAI.key});
   const resp = await getChat(whats.Body);
-  await whats.update({resp});
+  await whats.updateOne({resp});
   const reply = await replyMessage(whats.From, resp);
   return {resp, reply};*/
 };
@@ -490,7 +486,7 @@ const refreshWhatsQueue = async (req, res) => {
     console.log(pendingThread);
     return { message: "No pending threads" };
   } else {
-    runPendingThread(pendingThread, pendingThread.runId, pendingThread.threadId).then((resp) => {
+    await runPendingThread(pendingThread, pendingThread.runId, pendingThread.threadId).then((resp) => {
       return resp;
     }
     ).catch((err) => {

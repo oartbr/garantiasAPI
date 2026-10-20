@@ -86,7 +86,7 @@ const deleteSkuById = async (skuId) => {
   if (!sku) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Sku not found');
   }
-  await sku.remove();
+  await sku.deleteOne();
   return sku;
 };
 

@@ -161,12 +161,11 @@ garantiaSchema.methods.isPasswordMatch = async function (password) {
   return bcrypt.compare(password, user.password);
 };
 
-garantiaSchema.pre('save', async function (next) {
+garantiaSchema.pre('save', async function () {
   const user = this;
   if (user.isModified('password')) {
     user.password = await bcrypt.hash(user.password, 8);
   }
-  next();
 });
 
 /**

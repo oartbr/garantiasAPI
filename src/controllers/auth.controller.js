@@ -32,7 +32,7 @@ const forgotPassword = catchAsync(async (req, res) => {
 });
 
 const resetPassword = catchAsync(async (req, res) => {
-  await authService.resetPassword(req.query.token, req.body.password);
+  await authService.resetPassword((req.validated?.query ?? req.sanitizedQuery ?? req.query).token, req.body.password);
   res.status(httpStatus.NO_CONTENT).send();
 });
 
@@ -43,19 +43,17 @@ const sendVerificationEmail = catchAsync(async (req, res) => {
 });
 
 const verifyEmail = catchAsync(async (req, res) => {
-  await authService.verifyEmail(req.query.token);
+  await authService.verifyEmail((req.validated?.query ?? req.sanitizedQuery ?? req.query).token);
   res.status(httpStatus.NO_CONTENT).send();
 });
 
 const getMe = catchAsync(async (req, res) => {
-  const getVerifiedToken = await tokenService.verifyToken(req.headers.authorization, 'refresh');
-  const user = await userService.getUserById(getVerifiedToken.user);
+  const user = req.user;
   res.status(httpStatus.OK).send(user);
 });
 
 const patchMe = catchAsync(async (req, res) => {
-  const getVerifiedToken = await tokenService.verifyToken(req.headers.authorization, 'refresh');
-  const user = await userService.getUserById(getVerifiedToken.user);
+  const user = req.user;
   if (user) {
     await userService.updateUserById(user._id, req.body);
   }

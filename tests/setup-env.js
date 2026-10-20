@@ -1,0 +1,11 @@
+process.env.NODE_ENV = 'test';
+process.env.MONGODB_URL = 'mongodb://127.0.0.1:27017/garantias-test';
+process.env.JWT_SECRET = 'isolated-tests-only-not-a-production-secret';
+process.env.TWILIO_ACCOUNTSID = 'AC00000000000000000000000000000000';
+process.env.TWILIO_AUTHTOKEN = 'test-token';
+process.env.TWILIO_FROMWHATS = 'whatsapp:+15005550006';
+process.env.EMAIL_FROM = 'tests@example.test';
+process.env.SMTP_HOST = '127.0.0.1';
+process.env.SMTP_PORT = '1025';
+process.env.CORS_ORIGIN = 'http://localhost:3000';
+process.env.CORS_STATUS = '204';

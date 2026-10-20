@@ -63,12 +63,11 @@ const skuSchema = mongoose.Schema(
 skuSchema.plugin(toJSON);
 skuSchema.plugin(paginate);
 
-skuSchema.pre('save', async function (next) {
+skuSchema.pre('save', async function () {
   const sku = this;
   if (sku.isModified('password')) {
     sku.password = await bcrypt.hash(sku.password, 8);
   }
-  next();
 });
 
 /**
